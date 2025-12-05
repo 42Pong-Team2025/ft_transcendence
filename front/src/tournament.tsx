@@ -1,6 +1,12 @@
 import { useState } from "react";
 
 function Tournament() {
+	//state
+
+	//handler
+
+
+	//render
 	return (
 		<div className="tournament_container">
 			<h1>Tournament Page</h1>

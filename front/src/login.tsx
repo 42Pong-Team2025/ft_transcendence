@@ -41,6 +41,7 @@ function Login({onLogin}: {onLogin: (username: string) => void}) {
 
   return (
 	<div className='login_container'>
+		<img src='/controler.png' alt='Logo' className='login_logo_image' />
 	  <p className='login_title'>ft_transcendance</p>
 	  <p className='login_subtitle'>Tournois de Pong en ligne</p>
 	  <div className='login_button_container'>
