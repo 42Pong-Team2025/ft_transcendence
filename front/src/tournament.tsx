@@ -10,7 +10,7 @@ function Tournament() {
   const [player, setPlayer] = useState<string>("");
   const [players, setPlayers] = useState<string[]>([]);
   const [tournaments, setTournaments] = useState<
-    { id: number; name: string; players: string[]; done: boolean }[]
+    { id: number; name: string; players: string[]; done: boolean; winner: string }[]
   >([]);
   const [nextTournamentId, setNextTournamentId] = useState<number>(1);
 
@@ -22,21 +22,23 @@ function Tournament() {
   const [currentMatches, setCurrentMatches] = useState<Match[]>([]);
   const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(0);
   const [winnerQueue, setWinnerQueue] = useState<string[]>([]);
+  const [waitingForNextRound, setWaitingForNextRound] = useState<boolean>(false);
 
   // GAME LOGIC
   const canvaRef = useRef<HTMLCanvasElement>(null);
-  const ball = useRef({ x: 350, y: 300, radius: 10, dx: 2, dy: 2 });
+  const ballSpeed = 10;
+  const ball = useRef({ x: 350, y: 300, radius: 10, dx: ballSpeed, dy: ballSpeed });
   const paddle1 = useRef({ x: 20, y: 250, width: 10, height: 100 });
   const paddle2 = useRef({ x: 670, y: 250, width: 10, height: 100 });
-  const paddleSpeed = 6;
+  const paddleSpeed = 10;
   const score1 = useRef(0);
   const score2 = useRef(0);
 
   const resetBall = (canvas: HTMLCanvasElement) => {
     ball.current.x = canvas.width / 2;
     ball.current.y = canvas.height / 2;
-    ball.current.dx = 2 * (ball.current.dx > 0 ? 1 : -1);
-    ball.current.dy = 2 * (ball.current.dy > 0 ? 1 : -1);
+    ball.current.dx = ballSpeed * (ball.current.dx > 0 ? 1 : -1);
+    ball.current.dy = ballSpeed * (ball.current.dy > 0 ? 1 : -1);
   };
 
   const handleCreate = () => {
@@ -59,6 +61,7 @@ function Tournament() {
       name: tournamentName,
       players: shuffle(players),
       done: false,
+        winner: "",
     };
     setTournaments((prev) => [...prev, newTournament]);
     setNextTournamentId((prev) => prev + 1);
@@ -119,7 +122,6 @@ function Tournament() {
     const shuffled = shuffle(tournament.players);
     let pool = [...shuffled];
 
-    // Si nombre impair de joueurs → un BYE (auto-qualifié)
     const nextWinners: string[] = [];
     if (pool.length % 2 === 1) {
       const byePlayer = pool.pop()!;
@@ -134,7 +136,7 @@ function Tournament() {
     setCurrentTournament(tournament);
     setCurrentMatches(matches);
     setTournamentInProgress(true);
-    setGameInProgress(true);
+    setGameInProgress(false);
     setWinnerQueue(nextWinners);
     setCurrentMatchIndex(0);
 
@@ -142,11 +144,20 @@ function Tournament() {
     score2.current = 0;
   };
 
+  const handleStartMatch = () => {
+    const canvas = canvaRef.current;
+    score1.current = 0;
+    score2.current = 0;
+    if (canvas) resetBall(canvas);
+    setGameInProgress(true);
+  };
+
   const finishTournament = (winner: string) => {
-    alert(`Le gagnant du tournoi est ${winner} !`);
     setTournaments((prev) =>
       prev.map((t) =>
         t.id === currentTournament.id ? { ...t, done: true } : t
+        ).map((t) =>
+            t.id === currentTournament.id ? { ...t, winner: winner } : t
       )
     );
     setTournamentInProgress(false);
@@ -272,21 +283,16 @@ function Tournament() {
         const winner =
           score1.current >= 5 ? match[0] : match[1];
 
-        // setWinnerQueue((prev) => [...prev, winner]);
-
-        // if (currentMatchIndex < currentMatches.length - 1) {
-        //   setCurrentMatchIndex((prev) => prev + 1);
-        //   resetBall(canvas);
-        // } else {
-        //   handleNextRound();
-        // }
         const newWinners = [...winnerQueue, winner];
+        setGameInProgress(false);
+        score1.current = 0;
+        score2.current = 0;
+
         if (currentMatchIndex < currentMatches.length - 1) {
           setWinnerQueue(newWinners);
           setCurrentMatchIndex((prev) => prev + 1);
-          score1.current = 0;
-          score2.current = 0;
-          resetBall(canvas);
+          const canvas = canvaRef.current;
+          if (canvas) resetBall(canvas);
         }
         else {
           handleNextRound(newWinners);
@@ -431,6 +437,10 @@ function Tournament() {
                   Démarrer le tournoi
                 </button>
               )}
+              {tournament.done && tournament.winner !== "" &&
+                <p className="tournament_winner">
+                    Gagnant : {tournament.winner}
+                </p>}
             </li>
           ))}
       </ul>
@@ -443,10 +453,19 @@ function Tournament() {
               Tournoi en cours : {currentTournament.name}
             </h2>
             <h3 className="current_match_title">
-              Match en cours :{" "}
+            {gameInProgress ? "Match en cours :" : "Prochain match :"}{" "}
+                <br/>
               {currentMatches[currentMatchIndex][0]} vs{" "}
               {currentMatches[currentMatchIndex][1]}
             </h3>
+            {!gameInProgress && (
+              <button
+                className="start_match_button"
+                onClick={handleStartMatch}
+              >
+                Démarrer le match
+              </button>
+            )}
             {gameInProgress && (
               <canvas
                 ref={canvaRef}
