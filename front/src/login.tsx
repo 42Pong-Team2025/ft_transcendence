@@ -9,7 +9,7 @@ function Login({onLogin}: {onLogin: (username: string) => void}) {
     const [registerMode, setRegisterMode] = useState<boolean>(false);
 
     const[user, setUser] = useState<{username: string, password: string} | null>(null);
-    const[newUser, setNewUser] = useState<{username: string, password: string, email: string} | null>(null);
+    const[newUser, setNewUser] = useState<{username: string, password: string, email: string, birthdate: string} | null>(null);
     const [createUsername, setCreateUsername] = useState<string>('');
     const [createPassword, setCreatePassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
@@ -20,14 +20,15 @@ function Login({onLogin}: {onLogin: (username: string) => void}) {
     const [lowercasePresent, setLowercasePresent] = useState<boolean>(false);
     const [numberPresent, setNumberPresent] = useState<boolean>(false);
     const [specialCharPresent, setSpecialCharPresent] = useState<boolean>(false);
+    const [birthdate, setBirthdate] = useState<string>('');
 
     //handlers for registration
     const handleRegister = (event: React.FormEvent) => {
         event.preventDefault();
         console.log('Registration form submitted');
         if (createUsername && createPassword && createPassword === confirmPassword && passwordFormat) {
-            setNewUser({username: createUsername, password: createPassword, email: createEmail});
-            console.log('User registered:', {createUsername, createPassword, createEmail});
+            setNewUser({username: createUsername, password: createPassword, email: createEmail, birthdate: birthdate});
+            console.log('User registered:', {createUsername, createPassword, createEmail, birthdate});
             onLogin(createUsername);
         }
         else if (createPassword !== confirmPassword) {
@@ -64,6 +65,10 @@ function Login({onLogin}: {onLogin: (username: string) => void}) {
 
     const handleCreateEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
         setCreateEmail(event.target.value);
+    }
+
+    const handleBirthdateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setBirthdate(event.target.value);
     }
 
     //handlers
@@ -145,6 +150,15 @@ function Login({onLogin}: {onLogin: (username: string) => void}) {
               className='username_input'
               placeholder="Entrez votre nom d'utilisateur"
               onChange={handleCreateUsername}
+              required
+            />
+            <p className='birthdate'>Date de naissance</p>
+            <input 
+              type="date"
+              id="birthdate"
+              className='birthdate_input'
+              value={birthdate}
+              onChange={handleBirthdateChange}
               required
             />
             <p className='password'>Choisissez un mot de passe</p>

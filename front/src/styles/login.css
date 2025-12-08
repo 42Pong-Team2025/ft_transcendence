@@ -178,3 +178,19 @@
   transform: translateY(0);
 }
 
+.birthdate_input {
+  width: 18.75rem;
+  padding: .625rem;
+  margin: .375rem 0;
+  border: none;
+  border-radius: .5rem;
+  font-size: 1rem;
+  color:rgba(255, 255, 255, 0.705);
+  background-color: rgba(240, 240, 240, 0.3);
+}
+
+.birthdate {
+  color: rgba(255, 255, 255, 0.774);
+  font-weight: 600;
+  margin-bottom : 0.3125rem;
+}
