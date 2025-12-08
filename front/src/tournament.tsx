@@ -22,15 +22,14 @@ function Tournament() {
   const [currentMatches, setCurrentMatches] = useState<Match[]>([]);
   const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(0);
   const [winnerQueue, setWinnerQueue] = useState<string[]>([]);
-  const [waitingForNextRound, setWaitingForNextRound] = useState<boolean>(false);
 
   // GAME LOGIC
   const canvaRef = useRef<HTMLCanvasElement>(null);
-  const ballSpeed = 10;
+  const ballSpeed = 4;
   const ball = useRef({ x: 350, y: 300, radius: 10, dx: ballSpeed, dy: ballSpeed });
   const paddle1 = useRef({ x: 20, y: 250, width: 10, height: 100 });
   const paddle2 = useRef({ x: 670, y: 250, width: 10, height: 100 });
-  const paddleSpeed = 10;
+  const paddleSpeed = 6;
   const score1 = useRef(0);
   const score2 = useRef(0);
 
