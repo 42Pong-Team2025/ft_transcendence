@@ -254,15 +254,43 @@ function Tournament() {
       }
 
       // paddle collision
+      // if (
+      //   (b.x - b.radius < p1.x + p1.width &&
+      //     b.y > p1.y &&
+      //     b.y < p1.y + p1.height) ||
+      //   (b.x + b.radius > p2.x &&
+      //     b.y > p2.y &&
+      //     b.y < p2.y + p2.height)
+      // ) {
+      //   b.dx = -b.dx;
+      // }
       if (
-        (b.x - b.radius < p1.x + p1.width &&
-          b.y > p1.y &&
-          b.y < p1.y + p1.height) ||
-        (b.x + b.radius > p2.x &&
-          b.y > p2.y &&
-          b.y < p2.y + p2.height)
-      ) {
-        b.dx = -b.dx;
+        b.x - b.radius < p1.x + p1.width &&
+        b.y >= p1.y &&
+        b.y <= p1.y + p1.height)
+      {
+        const relativeIntersectY = (p1.y + (p1.height / 2)) - b.y;
+        const normalized = relativeIntersectY / (p1.height / 2);
+        const maxBounceAngle = Math.PI / 3;
+        const bounceAngle = normalized * maxBounceAngle;
+        const speed = Math.sqrt(b.dx * b.dx + b.dy * b.dy);
+        b.dx = speed * Math.cos(bounceAngle);
+        b.dy = -speed * Math.sin(bounceAngle);
+        b.x = p1.x + p1.width + b.radius;
+      }
+      if (
+        b.x + b.radius > p2.x &&
+        b.y >= p2.y &&
+        b.y <= p2.y + p2.height)
+      {
+        const relativeIntersectY = (p2.y + (p2.height / 2)) - b.y;
+        const normalized = relativeIntersectY / (p2.height / 2);
+        const maxBounceAngle = Math.PI / 3;
+        const bounceAngle = normalized * maxBounceAngle;
+        const speed = Math.sqrt(b.dx * b.dx + b.dy * b.dy);
+        b.dx = -speed * Math.cos(bounceAngle);
+        b.dy = -speed * Math.sin(bounceAngle);
+        b.x = p2.x - b.radius;
       }
 
       // out of bounds

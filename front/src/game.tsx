@@ -7,7 +7,25 @@ function Game() {
 	const paddle1 = useRef({ x: 20, y: 250, width: 10, height: 100 });
 	const paddle2 = useRef({ x: 670, y: 250, width: 10, height: 100 });
 	const paddleSpeed = 6;
+	const aiKeys = useRef({ up: false, down: false });
 
+	setInterval(() => {
+		const p1 = paddle1.current;
+		const b = ball.current;
+		const timeToReachAI = (b.x - p1.x) / b.dx;
+		const predictedY = b.y + b.dy * timeToReachAI;
+		
+		if (predictedY < p1.y + p1.height / 2) {
+			aiKeys.current.up = true;
+			aiKeys.current.down = false;
+		} else if (predictedY > p1.y + p1.height / 2) {
+			aiKeys.current.up = false;
+			aiKeys.current.down = true;
+		} else {
+			aiKeys.current.up = false;
+			aiKeys.current.down = false;
+		}
+	}, 1000);
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		if (!canvas) return;
@@ -21,16 +39,9 @@ function Game() {
 		const handleKeyUp = (e: KeyboardEvent) => {
 			keys[e.key] = false;
 		};
-		const handleKeyW = (e: KeyboardEvent) => {
-			keys[e.key] = true;
-		}
-		const handleKeyS = (e: KeyboardEvent) => {
-			keys[e.key] = false;
-		}
 		window.addEventListener("keydown", handleKeyDown);
 		window.addEventListener("keyup", handleKeyUp);
-		window.addEventListener("keydown", handleKeyW);
-		window.addEventListener("keyup", handleKeyS);
+
 		function loop()  {
 			const b = ball.current;
 			const p1 = paddle1.current;
@@ -45,10 +56,10 @@ function Game() {
 			if (canvas && keys["ArrowDown"] && p2.y + p2.height < canvas.height) {
 				p2.y += paddleSpeed;
 			}
-			if (keys["w"] && p1.y > 0) {
+			if (aiKeys.current.up && p1.y > 0) {
 				p1.y -= paddleSpeed;
 			}
-			if (canvas && keys["s"] && p1.y + p1.height < canvas.height) {
+			if (aiKeys.current.down && canvas && p1.y + p1.height < canvas.height) {
 				p1.y += paddleSpeed;
 			}
 			b.x += b.dx;
@@ -57,16 +68,44 @@ function Game() {
 				b.dy = -b.dy;
 			}
 			// Paddle collision
+			// if (
+			// 	(b.x - b.radius < p1.x + p1.width &&
+			// 	b.y > p1.y &&
+			// 	b.y < p1.y + p1.height) ||
+			// 	(b.x + b.radius > p2.x &&
+			// 	b.y > p2.y &&
+			// 	b.y < p2.y + p2.height)
+			// ) {
+			// 	b.dx = -b.dx;
+			// }
 			if (
-				(b.x - b.radius < p1.x + p1.width &&
-				b.y > p1.y &&
-				b.y < p1.y + p1.height) ||
-				(b.x + b.radius > p2.x &&
-				b.y > p2.y &&
-				b.y < p2.y + p2.height)
-			) {
-				b.dx = -b.dx;
-			}
+				b.x - b.radius < p1.x + p1.width &&
+				b.y >= p1.y &&
+				b.y <= p1.y + p1.height)
+				{
+					const relativeIntersectY = (p1.y + (p1.height / 2)) - b.y;
+					const normalized = relativeIntersectY / (p1.height / 2);
+					const maxBounceAngle = Math.PI / 3;
+					const bounceAngle = normalized * maxBounceAngle;
+					const speed = Math.sqrt(b.dx * b.dx + b.dy * b.dy);
+					b.dx = speed * Math.cos(bounceAngle);
+					b.dy = -speed * Math.sin(bounceAngle);
+					b.x = p1.x + p1.width + b.radius;
+				}
+			if (
+				b.x + b.radius > p2.x &&
+				b.y >= p2.y &&
+				b.y <= p2.y + p2.height)
+				{
+					const relativeIntersectY = (p2.y + (p2.height / 2)) - b.y;
+					const normalized = relativeIntersectY / (p2.height / 2);
+					const maxBounceAngle = Math.PI / 3;
+					const bounceAngle = normalized * maxBounceAngle;
+					const speed = Math.sqrt(b.dx * b.dx + b.dy * b.dy);
+					b.dx = -speed * Math.cos(bounceAngle);
+					b.dy = -speed * Math.sin(bounceAngle);
+					b.x = p2.x - b.radius;
+				}
 			// Reset ball if it goes out of bounds
 			if (b.x < 0 || b.x > canvas!.width) {
 				b.x = canvas!.width / 2;
@@ -76,8 +115,9 @@ function Game() {
 			}
 			// Draw paddles and ball
 			if (context) {
-				context.fillStyle = "white";
+				context.fillStyle = "red";
 				context.fillRect(p1.x, p1.y, p1.width, p1.height);
+				context.fillStyle = "white";
 				context.fillRect(p2.x, p2.y, p2.width, p2.height);
 				context.beginPath();
 				context.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
@@ -89,8 +129,6 @@ function Game() {
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
 			window.removeEventListener("keyup", handleKeyUp);
-			window.removeEventListener("keydown", handleKeyW);
-			window.removeEventListener("keyup", handleKeyS);
 		};
 	}, []);
 
