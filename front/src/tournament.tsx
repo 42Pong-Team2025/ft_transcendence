@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "./styles/tournament.css";
+import Pong from "./pong";
 
 type Match = [string, string];
 
@@ -23,22 +24,6 @@ function Tournament() {
   const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(0);
   const [winnerQueue, setWinnerQueue] = useState<string[]>([]);
 
-  // GAME LOGIC
-  const canvaRef = useRef<HTMLCanvasElement>(null);
-  const ballSpeed = 4;
-  const ball = useRef({ x: 350, y: 300, radius: 10, dx: ballSpeed, dy: ballSpeed });
-  const paddle1 = useRef({ x: 20, y: 250, width: 10, height: 100 });
-  const paddle2 = useRef({ x: 670, y: 250, width: 10, height: 100 });
-  const paddleSpeed = 6;
-  const score1 = useRef(0);
-  const score2 = useRef(0);
-
-  const resetBall = (canvas: HTMLCanvasElement) => {
-    ball.current.x = canvas.width / 2;
-    ball.current.y = canvas.height / 2;
-    ball.current.dx = ballSpeed * (ball.current.dx > 0 ? 1 : -1);
-    ball.current.dy = ballSpeed * (ball.current.dy > 0 ? 1 : -1);
-  };
 
   const handleCreate = () => {
     setOnCreate((prev) => !prev);
@@ -139,15 +124,10 @@ function Tournament() {
     setWinnerQueue(nextWinners);
     setCurrentMatchIndex(0);
 
-    score1.current = 0;
-    score2.current = 0;
+
   };
 
   const handleStartMatch = () => {
-    const canvas = canvaRef.current;
-    score1.current = 0;
-    score2.current = 0;
-    if (canvas) resetBall(canvas);
     setGameInProgress(true);
   };
 
@@ -189,175 +169,8 @@ function Tournament() {
     setCurrentMatches(newMatches);
     setCurrentMatchIndex(0);
     setWinnerQueue(nextCarry);
-    score1.current = 0;
-    score2.current = 0;
 
-    const canvas = canvaRef.current;
-    if (canvas) resetBall(canvas);
 };
-
-  useEffect(() => {
-    if (!gameInProgress) return;
-    const canvas = canvaRef.current;
-    if (!canvas) return;
-    const context = canvas.getContext("2d");
-    if (!context) return;
-
-    let keys: { [key: string]: boolean } = {};
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.key === "w" ||
-        e.key === "s" ||
-        e.key === "ArrowUp" ||
-        e.key === "ArrowDown"
-      ) {
-        e.preventDefault();
-      }
-      keys[e.key] = true;
-    };
-    const handleKeyUp = (e: KeyboardEvent) => {
-      keys[e.key] = false;
-    };
-    window.addEventListener("keydown", handleKeyDown, { passive: false });
-    window.addEventListener("keyup", handleKeyUp);
-
-    let animationId: number;
-
-    const loop = () => {
-      const b = ball.current;
-      const p1 = paddle1.current;
-      const p2 = paddle2.current;
-
-      context.clearRect(0, 0, canvas.width, canvas.height);
-
-      // input
-      if (keys["ArrowUp"] && p2.y > 0) {
-        p2.y -= paddleSpeed;
-      }
-      if (keys["ArrowDown"] && p2.y + p2.height < canvas.height) {
-        p2.y += paddleSpeed;
-      }
-      if (keys["w"] && p1.y > 0) {
-        p1.y -= paddleSpeed;
-      }
-      if (keys["s"] && p1.y + p1.height < canvas.height) {
-        p1.y += paddleSpeed;
-      }
-
-      // ball move
-      b.x += b.dx;
-      b.y += b.dy;
-
-      if (b.y < 0 || b.y > canvas.height - b.radius) {
-        b.dy = -b.dy;
-      }
-
-      // paddle collision
-      // if (
-      //   (b.x - b.radius < p1.x + p1.width &&
-      //     b.y > p1.y &&
-      //     b.y < p1.y + p1.height) ||
-      //   (b.x + b.radius > p2.x &&
-      //     b.y > p2.y &&
-      //     b.y < p2.y + p2.height)
-      // ) {
-      //   b.dx = -b.dx;
-      // }
-      if (
-        b.x - b.radius < p1.x + p1.width &&
-        b.y >= p1.y &&
-        b.y <= p1.y + p1.height)
-      {
-        const relativeIntersectY = (p1.y + (p1.height / 2)) - b.y;
-        const normalized = relativeIntersectY / (p1.height / 2);
-        const maxBounceAngle = Math.PI / 3;
-        const bounceAngle = normalized * maxBounceAngle;
-        const speed = Math.sqrt(b.dx * b.dx + b.dy * b.dy);
-        b.dx = speed * Math.cos(bounceAngle);
-        b.dy = -speed * Math.sin(bounceAngle);
-        b.x = p1.x + p1.width + b.radius;
-      }
-      if (
-        b.x + b.radius > p2.x &&
-        b.y >= p2.y &&
-        b.y <= p2.y + p2.height)
-      {
-        const relativeIntersectY = (p2.y + (p2.height / 2)) - b.y;
-        const normalized = relativeIntersectY / (p2.height / 2);
-        const maxBounceAngle = Math.PI / 3;
-        const bounceAngle = normalized * maxBounceAngle;
-        const speed = Math.sqrt(b.dx * b.dx + b.dy * b.dy);
-        b.dx = -speed * Math.cos(bounceAngle);
-        b.dy = -speed * Math.sin(bounceAngle);
-        b.x = p2.x - b.radius;
-      }
-
-      // out of bounds
-      if (b.x < 0 || b.x > canvas.width) {
-        if (b.x < 0) {
-          score2.current += 1;
-        } else {
-          score1.current += 1;
-        }
-        console.log("Score:", score1.current, "-", score2.current);
-        resetBall(canvas);
-      }
-
-      // Check for winning condition
-      if (score1.current >= 5 || score2.current >= 5) {
-        const match = currentMatches[currentMatchIndex];
-        const winner =
-          score1.current >= 5 ? match[0] : match[1];
-
-        const newWinners = [...winnerQueue, winner];
-        setGameInProgress(false);
-        score1.current = 0;
-        score2.current = 0;
-
-        if (currentMatchIndex < currentMatches.length - 1) {
-          setWinnerQueue(newWinners);
-          setCurrentMatchIndex((prev) => prev + 1);
-          const canvas = canvaRef.current;
-          if (canvas) resetBall(canvas);
-        }
-        else {
-          handleNextRound(newWinners);
-        }
-      }
-
-      // draw paddles & ball
-      context.fillStyle = "white";
-      context.fillRect(p1.x, p1.y, p1.width, p1.height);
-      context.fillRect(p2.x, p2.y, p2.width, p2.height);
-
-      context.font = "30px 'Press Start 2P'";
-      context.fillText(`${score1.current}`, canvas.width / 4, 50);
-      context.fillText(`${score2.current}`, (canvas.width * 3) / 4, 50);
-
-      context.beginPath();
-      context.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-      context.fill();
-
-      context.strokeStyle = "white";
-      context.lineWidth = 4;
-      context.setLineDash([10, 10]);
-      context.beginPath();
-      context.moveTo(canvas.width / 2, 0);
-      context.lineTo(canvas.width / 2, canvas.height);
-      context.stroke();
-
-      animationId = requestAnimationFrame(loop);
-    };
-
-    loop();
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-      cancelAnimationFrame(animationId);
-    };
-  }, [gameInProgress, currentMatchIndex, currentMatches, winnerQueue]);
 
   // render
   return (
@@ -494,11 +307,22 @@ function Tournament() {
               </button>
             )}
             {gameInProgress && (
-              <canvas
-                ref={canvaRef}
-                className="game_canva"
-                width={700}
-                height={600}
+              <Pong 
+                opponnentIA={false}
+                isTournament={true}
+                onGameEnd={(winner : 1 | 2) => {
+                  const current = currentMatches[currentMatchIndex];
+                  const winnerName = winner === 1 ? current[0] : current[1];
+                  const newWinners = [...winnerQueue, winnerName];
+                  setGameInProgress(false);
+                  if (currentMatchIndex < currentMatches.length - 1) {
+                    setWinnerQueue(newWinners);
+                    setCurrentMatchIndex((prev) => prev + 1);
+                  } else {
+                    handleNextRound(newWinners);
+                  }
+                  
+                }}
               />
             )}
           </div>

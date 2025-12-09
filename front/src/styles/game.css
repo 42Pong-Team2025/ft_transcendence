@@ -1,15 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 .game_container {
+	align-items: flex-start;
+	justify-content: left;
+	padding: 4rem;
+	margin-left : -2rem;
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	height: 100vh;
-	color: rgb(255, 255, 255);
 }
 
-.gameCanvas {
+.game_container_title {
+	font-size: 2rem;
+	font-weight: 400;
+	margin-bottom: 1rem;
+	margin-left: 1rem;
+	color: rgb(255, 255, 255);
+	font-family: 'Press Start 2P', cursive;
+}
+
+.pongCanvas {
 	border: 0.125rem solid rgba(255, 255, 255, 0.3);
 	border-radius: 1rem;
 	box-shadow: 0 0.25rem 1.875rem rgba(0, 0, 0, 0.1);
 	background-color: rgba(0, 0, 0, 0.5);
+}
+
+.render_game {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: rgba(0, 0, 0, 0.8);
+	padding: 100%;
+	border-radius: 1rem;
+	size: auto;
+	border: 0.0625rem solid rgba(255, 255, 255, 0.3);
+	box-shadow: 0 0.25rem 1.875rem rgba(0, 0, 0, 0.1);
+}
+
+.game_list {
+	display: flex;
+	flex-direction: row;
+	gap: 1rem;
+	margin-top: 2rem;
+	list-style: none;
+}
+
+.game_list_item {
+	background-color: rgba(255, 255, 255, 0.1);
+	padding: 1rem;
+	border-radius: 0.5rem;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+.game_list_item:hover {
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+.logo_pong {
+	width: 10rem;
+	height: auto;
+	margin-bottom: 1rem;
+}
+
+/* its a select balise */
+.game_select {
+	margin-top: 1rem;
+	padding: 0.5rem;
+	border-radius: 0.5rem;
+	border: none;
+	background-color: rgba(255, 255, 255, 0.1);
+	color: white;
+	font-size: 1rem;
+}
+
+.game_select:hover {
+	background-color: rgba(255, 255, 255, 0.2);
 }
