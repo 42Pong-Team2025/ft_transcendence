@@ -44,6 +44,7 @@ function Pong({opponnentIA,
 		if (!canvas) return;
 		const context = canvas.getContext("2d");
 		if (!context) return;
+		let animationId: number;
 		let keys = {} as { [key: string]: boolean };
 
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -159,12 +160,13 @@ function Pong({opponnentIA,
 	  			context.lineTo(canvas.width / 2, canvas.height);
 	  			context.stroke();
 			}
-			requestAnimationFrame(loop);
+			animationId = requestAnimationFrame(loop);
 		}
 		loop();
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
 			window.removeEventListener("keyup", handleKeyUp);
+			cancelAnimationFrame(animationId);
 		};
 	}, []);
 
