@@ -1,30 +1,50 @@
-1    Major module: Use a framework to build the backend.
+major : framework for both
 
-0.5  Minor module: Use a framework or a toolkit to build the frontend.
+Major: Implement real-time features using WebSockets or similar technology.
 
-1    Minor module: Use a database for the backend
+Major: Allow users to interact with other users. The minimum requirements are:
 
-1    Major module: Standard user management, authentication, users across
-     tournaments.
+Minor: Use an ORM for the database. POstgresSQL, prisma
 
-1    Major module: Implementing a remote authentication.
+Minor: Server-Side Rendering (SSR) for improved performance and SEO.
 
-0.5  Minor module: Game customization options
+Major: Complete accessibility compliance (WCAG 2.1 AA) with screen reader
+support, keyboard navigation, and assistive technologies.
+• Minor: Support for multiple languages (at least 3 languages).
+◦ Implement i18n (internationalization) system.
+◦ At least 3 complete language translations.
+◦ Language switcher in the UI.
+◦ All user-facing text must be translatable.
+• Minor: Right-to-left (RTL) language support.
+◦ Support for at least one RTL language (Arabic, Hebrew, etc.).
+◦ Complete layout mirroring (not just text direction).
+◦ RTL-specific UI adjustments where needed.
+◦ Seamless switching between LTR and RTL.
+• Minor: Support for additional browsers.
+◦ Full compatibility with at least 2 additional browsers (Firefox, Safari, Edge,
+etc.).
+◦ Test and fix all features in each browser.
+◦ Document any browser-specific limitations.
+◦ Consistent UI/UX across all supported browsers.
 
-1   Major module: Introduce an AI opponent.
+ Major: Standard user management and authentication.
 
-0.5 Minor module: User and game stats dashboards
+ Minor: Game statistics and match history (requires a game module).
 
-1   Major module: Implement Two-Factor Authentication (2FA) and JWT
+ Minor: Implement remote authentication with OAuth 2.0 (Google, GitHub, 42,
+etc.).
 
-0.5 Minor module: GDPR compliance options with user anonymization, local
-    data management, and Account Deletion.
+ Major: Advanced permissions system
 
-1   Major module: Infrastructure setup for log management.
+ Minor: Implement a complete 2FA (Two-Factor Authentication) system for the
+users.
 
-0.5 Minor module: Monitoring system.
+Artificial Intelligence
 
-1   Major module: Designing the backend as microservices
+Major: Implement WAF/ModSecurity (hardened) + HashiCorp Vault for secrets:
 
-0.5 Minor module: Supports multiple languages.
+Devops
+
+Data and Analytics
+
 

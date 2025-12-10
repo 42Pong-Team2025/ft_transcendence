@@ -1,69 +1,118 @@
-import { useState, useEffect } from "react";
-import Pong from "./pong.tsx";
+import { useState, useEffect, useRef } from "react";
+import Phaser from "phaser";
+import WorldMapScene from "./phaser/WorldMapScene";
 import "./styles/game.css";
-import TicTacToe from "./tictactoe.tsx";
 
-function Game() {
-	const [gameInPlay, setGameInPlay] = useState<boolean>(false);
-	const [clickPong, setClickPong] = useState<boolean>(false);
-	const [clickTicTacToe, setClickTicTacToe] = useState<boolean>(false);
-	const [opponnentIA, setOpponnentIA] = useState<boolean>(true);
+export default function Game() {
+	const gameContainerRef = useRef<HTMLDivElement | null>(null);
+	const phaserRef = useRef<Phaser.Game | null>(null);
 
-	const handlePong = () => {
-		clickPong ? setClickPong(false) : setClickPong(true);
-		gameInPlay ? setGameInPlay(false) : setGameInPlay(true);
-	}
+	const [gameInPlay, setGameInPlay] = useState(false);
+	const [isFullscreen, setIsFullscreen] = useState(false);
 
-	const handleTicTacToe = () => {
-		clickTicTacToe ? setClickTicTacToe(false) : setClickTicTacToe(true);
-		gameInPlay ? setGameInPlay(false) : setGameInPlay(true);
-	}
-
-	const handleOpponentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		if (e.target.value === "ia") {
-			setOpponnentIA(true);
-		} else {
-			setOpponnentIA(false);
-		}
-	}
+	const ORIGINAL_SIZE = "600px";
 
 	useEffect(() => {
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if (e.key === "Escape" && gameInPlay) {
-				setGameInPlay(false);
-				setClickPong(false);
-				setClickTicTacToe(false);
-			}
+		return () => {
+			phaserRef.current?.destroy(true);
+			phaserRef.current = null;
 		};
-		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, []);
+
+	useEffect(() => {
+		if (!gameInPlay || !gameContainerRef.current) return;
+		if (phaserRef.current) return;
+
+		const container = gameContainerRef.current;
+		container.style.width = ORIGINAL_SIZE;
+		container.style.height = ORIGINAL_SIZE;
+
+		phaserRef.current = new Phaser.Game({
+			type: Phaser.WEBGL,
+			parent: container,
+			width: "100%",
+			height: "100%",
+			scale: {
+				mode: Phaser.Scale.RESIZE,
+				autoCenter: Phaser.Scale.CENTER_BOTH,
+			},
+			scene: [WorldMapScene],
+			backgroundColor: "#000"
+		});
 	}, [gameInPlay]);
+
+	const exitFullscreen = () => {
+		const scale = phaserRef.current?.scale;
+		if (!scale) return;
+
+		if (scale.isFullscreen) scale.stopFullscreen();
+		setIsFullscreen(false);
+
+		const el = gameContainerRef.current;
+		if (el) {
+			el.classList.remove("fullscreen");
+			el.style.width = ORIGINAL_SIZE;
+			el.style.height = ORIGINAL_SIZE;
+		}
+
+		setTimeout(() => {
+			scale.setParentSize(600, 600);
+			scale.refresh();
+		}, 0);
+	};
+
+	useEffect(() => {
+		const onFullscreenChange = () => {
+			const fs = !!document.fullscreenElement;
+			if (!fs && isFullscreen) exitFullscreen();
+		};
+
+		document.addEventListener("fullscreenchange", onFullscreenChange);
+		return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+	}, [isFullscreen]);
+
+	const toggleFullscreen = () => {
+		if (!phaserRef.current) return;
+		const scale = phaserRef.current.scale;
+
+		if (scale.isFullscreen) {
+			exitFullscreen();
+			return;
+		}
+
+		setIsFullscreen(true);
+
+		const el = gameContainerRef.current;
+		if (el) {
+			el.classList.add("fullscreen");
+			el.style.width = "100vw";
+			el.style.height = "100vh";
+		}
+
+		scale.startFullscreen();
+		setTimeout(() => scale.refresh(), 0);
+	};
 
 	return (
 		<div className="game_container">
 			<h1 className="game_container_title">Liste de jeux</h1>
-			<select className="game_select" onChange={handleOpponentChange}>
-				<option value="ia">Opposant IA</option>
-				<option value="human">Opposant Humain</option>
-			</select>
-			<br />
-			<ul className="game_list">
-				<li className="game_list_item" onClick={handlePong}>
-					<img src="/pong.png" alt="Pong" className="logo_game"/>
-				</li>
-				<li className="game_list_item" onClick={handleTicTacToe}>
-					<img src="/tictactoe.png" alt="Tic Tac Toe" className="logo_game"/>
-				</li>
-			</ul>
-			{gameInPlay &&
-				<div className="render_game">
-					{clickPong && <Pong opponnentIA={opponnentIA}
-					isTournament={false} />}
-					{clickTicTacToe && <TicTacToe />}
-				</div>
-			}
-		</div>
-	)
-}
 
-export default Game;
+			{!gameInPlay && (
+				<button
+					className="start_game_btn"
+					onClick={() => setGameInPlay(true)}
+				>
+					🎮 Entrer dans la carte
+				</button>
+			)}
+
+			<div ref={gameContainerRef} className="phaser_container">
+				{gameInPlay && (
+					<div className="fullscreen_btn" onClick={toggleFullscreen}>
+						⛶
+					</div>
+				)}
+			</div>
+		</div>
+	);
+}
