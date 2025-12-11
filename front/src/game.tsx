@@ -95,24 +95,23 @@ export default function Game() {
 
 	return (
 		<div className="game_container">
-			<h1 className="game_container_title">Liste de jeux</h1>
 
 			{!gameInPlay && (
 				<button
 					className="start_game_btn"
 					onClick={() => setGameInPlay(true)}
 				>
-					🎮 Entrer dans la carte
+					LANCER LE JEU
 				</button>
 			)}
 
+			{gameInPlay &&
 			<div ref={gameContainerRef} className="phaser_container">
-				{gameInPlay && (
 					<div className="fullscreen_btn" onClick={toggleFullscreen}>
 						⛶
 					</div>
-				)}
 			</div>
+			}
 		</div>
 	);
 }
