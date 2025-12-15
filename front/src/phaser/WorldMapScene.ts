@@ -510,7 +510,7 @@ export default class WorldMapScene extends Phaser.Scene {
 		this.isMoving = true;
 	}
 
-	update(_, delta: number) {
+	update(_: any, delta: number) {
 		if (!this.isMoving || this.moveQueue.length === 0) return;
 		
 		const target = this.moveQueue[0];
@@ -531,6 +531,7 @@ export default class WorldMapScene extends Phaser.Scene {
 				if (target === this.waypoints.parking) {
 					this.player.setTexture("nurse-left-1");
 				}
+				else if (target === this.waypoints.center) this.player.setTexture("nurse-down-1");
 				else this.player.setTexture("nurse-up-1");
 				this.goPopup(target);
 			}
