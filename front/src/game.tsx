@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import Phaser from "phaser";
 import WorldMapScene from "./phaser/WorldMapScene";
+import ShopScene from "./phaser/ShopScene";
+import CoffeeScene from "./phaser/CoffeeScene";
+import HouseScene from "./phaser/HouseScene";
+import ParkingScene from "./phaser/ParkingScene";
+import HospitalScene from "./phaser/HospitalScene";
 import "./styles/game.css";
 
 export default function Game() {
@@ -36,7 +41,13 @@ export default function Game() {
 				mode: Phaser.Scale.RESIZE,
 				autoCenter: Phaser.Scale.CENTER_BOTH,
 			},
-			scene: [WorldMapScene],
+			scene: [WorldMapScene,
+				ShopScene,
+				CoffeeScene,
+				HouseScene,
+				ParkingScene,
+				HospitalScene
+			],
 			backgroundColor: "#000"
 		});
 	}, [gameInPlay]);

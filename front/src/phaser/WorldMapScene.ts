@@ -485,6 +485,8 @@ export default class WorldMapScene extends Phaser.Scene {
 					onClick: () => {
 						console.log(`Entering the ${locationName}...`);
 						this.popupContainer.setVisible(false);
+						this.scene.start(`${locationName}Scene`);
+						this.moveToCenter();
 					},
 				},
 				{
