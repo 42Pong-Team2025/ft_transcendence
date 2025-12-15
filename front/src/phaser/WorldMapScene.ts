@@ -122,7 +122,10 @@ export default class WorldMapScene extends Phaser.Scene {
 		this.centerScene();
 
 
-		this.scale.on("resize", () => this.centerScene());
+		this.scale.on("resize", () => {
+			this.centerScene();
+			this.layoutPopup();
+		});
 		this.createNurseAnimations();
 		const canvas = this.game.canvas;
 		canvas.style.cursor = 'url("/assets/cursor.png"), auto';
@@ -136,10 +139,8 @@ export default class WorldMapScene extends Phaser.Scene {
 	}
 
 	private createPopup() {
-		const width = this.scale.width * 0.8;
-		const height = this.scale.height * 0.25;
 
-		this.popupBg = this.add.rectangle(0, 0, width, height, 0x000000, 0.7);
+		this.popupBg = this.add.rectangle(0, 0, 10, 10, 0x000000, 0.7);
 		this.popupBg.setStrokeStyle(2, 0xffffff);
 		this.popupBg.setOrigin(0.5);
 		
@@ -148,14 +149,13 @@ export default class WorldMapScene extends Phaser.Scene {
 			fontSize: '20px',
 			color: '#ffffffff',
 			align: 'center',
-			wordWrap: { width: width * 0.9 }
 		})
 		.setOrigin(0.5)
-		.setPosition(0, -height * 0.2);
 		
-		this.popupContainer = this.add.container(this.scale.width / 2, this.scale.height * 0.75, [this.popupBg, this.popupText]);
+		this.popupContainer = this.add.container(0, 0, [this.popupBg, this.popupText]);
 		this.popupContainer.setDepth(1000);
 		this.popupContainer.setVisible(false);
+		this.layoutPopup();
 	}
 
 	private typeText(fullText: string, speed: number = 50, onComplete?: () => void) {
@@ -317,6 +317,7 @@ export default class WorldMapScene extends Phaser.Scene {
 		});
 
 		sprite.on("pointerdown", () => {
+			if (this.isMoving || this.popupContainer.visible) return;
 			console.log(`Clicked on ${sprite.texture.key}`);
 			const destinationKey = sprite.texture.key;
 			this.moveTo(destinationKey);
@@ -437,6 +438,17 @@ export default class WorldMapScene extends Phaser.Scene {
 		// this.makeAllInteractiveBuildings();
 	}
 
+	private layoutPopup() {
+		const width = this.scale.width * 0.8;
+		const height = this.scale.height * 0.25;
+
+		this.popupBg.setSize(width, height);
+		this.popupText.setWordWrapWidth(width * 0.9);
+		this.popupContainer.setPosition(0, -height * 0.2);
+
+		this.popupContainer.setPosition(this.scale.width / 2, this.scale.height * 0.75);
+	}
+
 	private playWalkAnimation(dx: number, dy: number) {
 		if (Math.abs(dx) > Math.abs(dy)) {
 			// Moving horizontally
@@ -494,7 +506,7 @@ export default class WorldMapScene extends Phaser.Scene {
 			const wp = this.waypoints[key as keyof typeof this.waypoints];
 			return this.playerNX === wp.x && this.playerNY === wp.y;
 		});
-		this.moveQueue = [...this.routes[currentPos]].reverse();
+		this.moveQueue = [...this.routes[currentPos as keyof typeof this.routes]].reverse();
 		this.isMoving = true;
 	}
 
